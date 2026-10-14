@@ -103,12 +103,23 @@
     gap: 16px; margin-bottom: 20px;
   }
   .home-stat {
-    background: #fff; border-radius: 12px; padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-    border-left: 4px solid #667eea;
+    border-radius: 12px; padding: 22px 20px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    color: #fff; position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
   }
-  .home-stat .num { font-size: 28px; font-weight: 700; color: #2c3e50; }
-  .home-stat .label { color: #888; font-size: 13px; margin-top: 4px; }
+  .home-stat:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,0.16); }
+  .home-stat::after {
+    content: attr(data-icon);
+    position: absolute; right: 14px; bottom: 8px;
+    font-size: 46px; opacity: 0.22; line-height: 1;
+  }
+  .home-stat .num { font-size: 30px; font-weight: 700; color: #fff; }
+  .home-stat .label { opacity: 0.9; font-size: 13px; margin-top: 4px; }
+  .home-stat:nth-child(1) { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .home-stat:nth-child(2) { background: linear-gradient(135deg, #43cea2, #185a9d); }
+  .home-stat:nth-child(3) { background: linear-gradient(135deg, #fa709a, #fee140); }
+  .home-stat:nth-child(4) { background: linear-gradient(135deg, #30cfd0, #330867); }
   .quick-actions {
     background: #fff; border-radius: 12px; padding: 24px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
@@ -360,10 +371,10 @@
           <p>快速查看比赛数据、进入常用功能，轻松管理所有赛事</p>
         </div>
         <div class="home-grid">
-          <div class="home-stat"><div class="num" id="home-stat-total">0</div><div class="label">比赛总数</div></div>
-          <div class="home-stat"><div class="num" id="home-stat-tags">0</div><div class="label">标签种类</div></div>
-          <div class="home-stat"><div class="num" id="home-stat-levels">0</div><div class="label">赛事级别</div></div>
-          <div class="home-stat"><div class="num" id="home-stat-recent">0</div><div class="label">近 30 天新增</div></div>
+          <div class="home-stat" data-icon="🏆"><div class="num" id="home-stat-total">0</div><div class="label">比赛总数</div></div>
+          <div class="home-stat" data-icon="🏷️"><div class="num" id="home-stat-tags">0</div><div class="label">标签种类</div></div>
+          <div class="home-stat" data-icon="⭐"><div class="num" id="home-stat-levels">0</div><div class="label">赛事级别</div></div>
+          <div class="home-stat" data-icon="📈"><div class="num" id="home-stat-recent">0</div><div class="label">近 30 天新增</div></div>
         </div>
         <div class="quick-actions">
           <h3>快捷入口</h3>
