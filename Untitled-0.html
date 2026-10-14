@@ -85,41 +85,37 @@
   .home-page.active { display: block; }
   .data-page.active { display: block; }
   .data-page { display: none; }
-  .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 14px; padding: 32px 28px;
-    color: #fff; margin-bottom: 20px;
-    position: relative; overflow: hidden;
+  .welcome-title {
+    font-size: 18px; font-weight: 600; color: #2c3e50;
+    margin-bottom: 20px; padding-left: 2px;
   }
-  .hero::after {
-    content: ''; position: absolute; right: -40px; top: -40px;
-    width: 240px; height: 240px; border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-  }
-  .hero h1 { color: #fff; text-align: left; font-size: 26px; margin: 0 0 8px; }
-  .hero p { opacity: 0.9; font-size: 14px; margin: 0; }
   .home-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px; margin-bottom: 20px;
   }
   .home-stat {
-    border-radius: 12px; padding: 22px 20px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-    color: #fff; position: relative; overflow: hidden;
+    background: #fff; border-radius: 10px; padding: 18px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    color: #333; position: relative; overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 4px solid #667eea;
   }
-  .home-stat:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,0.16); }
+  .home-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
   .home-stat::after {
     content: attr(data-icon);
-    position: absolute; right: 14px; bottom: 8px;
-    font-size: 46px; opacity: 0.22; line-height: 1;
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 32px; opacity: 0.25; line-height: 1;
   }
-  .home-stat .num { font-size: 30px; font-weight: 700; color: #fff; }
-  .home-stat .label { opacity: 0.9; font-size: 13px; margin-top: 4px; }
-  .home-stat:nth-child(1) { background: linear-gradient(135deg, #667eea, #764ba2); }
-  .home-stat:nth-child(2) { background: linear-gradient(135deg, #43cea2, #185a9d); }
-  .home-stat:nth-child(3) { background: linear-gradient(135deg, #fa709a, #fee140); }
-  .home-stat:nth-child(4) { background: linear-gradient(135deg, #30cfd0, #330867); }
+  .home-stat .num { font-size: 28px; font-weight: 700; }
+  .home-stat .label { color: #888; font-size: 13px; margin-top: 4px; }
+  .home-stat:nth-child(1) { border-left-color: #667eea; }
+  .home-stat:nth-child(1) .num { color: #667eea; }
+  .home-stat:nth-child(2) { border-left-color: #43cea2; }
+  .home-stat:nth-child(2) .num { color: #185a9d; }
+  .home-stat:nth-child(3) { border-left-color: #fa709a; }
+  .home-stat:nth-child(3) .num { color: #fa709a; }
+  .home-stat:nth-child(4) { border-left-color: #30cfd0; }
+  .home-stat:nth-child(4) .num { color: #330867; }
   .quick-actions {
     background: #fff; border-radius: 12px; padding: 24px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
@@ -366,10 +362,7 @@
 
       <!-- 首页 -->
       <div class="home-page active" id="home-page">
-        <div class="hero">
-          <h1>👋 欢迎回来，这里是比赛管理概览</h1>
-          <p>快速查看比赛数据、进入常用功能，轻松管理所有赛事</p>
-        </div>
+        <div class="welcome-title">欢迎回来，这里是比赛管理概览</div>
         <div class="home-grid">
           <div class="home-stat" data-icon="🏆"><div class="num" id="home-stat-total">0</div><div class="label">比赛总数</div></div>
           <div class="home-stat" data-icon="🏷️"><div class="num" id="home-stat-tags">0</div><div class="label">标签种类</div></div>
