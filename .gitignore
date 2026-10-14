@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 本地数据（含你的比赛数据，不要上传）
+competitions.db
+competitions.db-*
+*.db
+
+# 公网隧道程序（体积较大，github 上按需自行下载）
+cloudflared.exe
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
