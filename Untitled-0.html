@@ -21,7 +21,14 @@
     color: #cfd8e3;
     display: flex; flex-direction: column;
     box-shadow: 2px 0 8px rgba(0,0,0,0.12);
+    transition: width 0.25s ease;
+    overflow: hidden;
   }
+  .sidebar.collapsed { width: 64px; }
+  .sidebar.collapsed .sidebar-logo-text,
+  .sidebar.collapsed .nav-item span:last-child { display: none; }
+  .sidebar.collapsed .sidebar-logo { justify-content: center; padding: 22px 0; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 11px 0; gap: 0; }
   .sidebar-logo {
     padding: 22px 18px 18px;
     font-size: 16px; font-weight: 700; color: #fff;
@@ -29,6 +36,7 @@
     letter-spacing: 0.5px;
     white-space: nowrap;
     overflow: hidden;
+    display: flex; align-items: center;
   }
   .sidebar-logo span { color: #667eea; }
   .sidebar-nav { flex: 1; padding: 14px 0; }
@@ -64,6 +72,13 @@
     transition: background 0.15s;
   }
   .topbar-user:hover { background: rgba(255,255,255,0.3); }
+  .collapse-btn {
+    background: transparent; border: none; color: #fff;
+    font-size: 20px; cursor: pointer; padding: 4px 10px;
+    border-radius: 4px; margin-right: 8px;
+    transition: background 0.15s;
+  }
+  .collapse-btn:hover { background: rgba(255,255,255,0.2); }
   .container { padding: 20px; max-width: 1200px; width: 100%; }
   h1 { color: #fff; text-align: center; margin-bottom: 30px; font-size: 28px; }
   .panel {
@@ -265,8 +280,8 @@
 </head>
 <body>
 <div class="app-wrapper">
-  <aside class="sidebar">
-    <div class="sidebar-logo">🏆 比赛管理与筛选系统</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span>🏆</span><span class="sidebar-logo-text">&nbsp;比赛管理与筛选系统</span></div>
     <nav class="sidebar-nav">
       <a class="nav-item active" onclick="switchPage('data')">
         <span class="nav-icon">📊</span><span>比赛数据</span>
@@ -284,7 +299,10 @@
   </aside>
   <div class="main-area">
     <header class="topbar">
-      <h2 id="topbar-title">比赛数据</h2>
+      <div style="display:flex;align-items:center;">
+        <button class="collapse-btn" onclick="toggleSidebar()" title="折叠侧边栏">☰</button>
+        <h2 id="topbar-title">比赛数据</h2>
+      </div>
       <div class="topbar-user"><span>👤</span><span>管理员</span></div>
     </header>
     <div class="container">
@@ -348,6 +366,14 @@
 </div>
 
 <script>
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar');
+  sb.classList.toggle('collapsed');
+  try { localStorage.setItem('sidebar_collapsed', sb.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+}
+(function(){
+  try { if (localStorage.getItem('sidebar_collapsed') === '1') document.getElementById('sidebar').classList.add('collapsed'); } catch(e) {}
+})();
 function switchPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   var map = { data: '比赛数据', entry: '录入比赛', import: '批量导入', settings: '系统设置' };
