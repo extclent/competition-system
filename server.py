@@ -12,14 +12,17 @@ import sqlite3
 from datetime import datetime, timedelta
 from io import BytesIO
 
-# 第三方依赖目录：优先项目内的 pylibs（重装系统临时目录不会清空），兼容旧的 TEMP\pylibs
-PYLIBS_DIRS = [
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pylibs'),
-    os.path.join(os.environ.get('TEMP', ''), 'pylibs'),
-]
-for _d in reversed(PYLIBS_DIRS):
-    if os.path.isdir(_d) and _d not in sys.path:
-        sys.path.insert(0, _d)
+# 第三方依赖目录：仅 Windows 本地直跑时使用项目内置的 pylibs。
+# 这些库是 Windows 构建（含 .pyd/.exe），Linux 部署（如 PythonAnywhere）必须改用 pip 安装的依赖，
+# 因此这里限定为 Windows，避免线上被 Windows 版 pylibs 覆盖 pip 库。
+if os.name == 'nt':
+    PYLIBS_DIRS = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pylibs'),
+        os.path.join(os.environ.get('TEMP', ''), 'pylibs'),
+    ]
+    for _d in reversed(PYLIBS_DIRS):
+        if os.path.isdir(_d) and _d not in sys.path:
+            sys.path.insert(0, _d)
 
 from flask import Flask, request, jsonify, send_file, send_from_directory
 
@@ -480,10 +483,14 @@ def excel_template():
                      mimetype='application/vnd.ms-excel')
 
 
+# 确保数据库就绪：放在模块级，使 WSGI 部署（如 PythonAnywhere 导入 server 模块）时也会建表，
+# 而不只限于 `python server.py` 直跑。
+init_db()
+
+
 if __name__ == '__main__':
     host = os.environ.get('HOST', '127.0.0.1')
     port = int(os.environ.get('PORT', '8765'))
-    init_db()
     print(f'[server] DB: {DB_PATH}')
     print(f'[server] HTML: {HTML_FILE}')
     print(f'[server] Starting on http://{host}:{port}')

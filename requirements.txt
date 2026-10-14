@@ -1,0 +1,5 @@
+# Linux 部署（如 PythonAnywhere）安装依赖：pip install -r requirements.txt
+# Windows 本地直跑无需安装，项目内置 pylibs 已就绪。
+flask>=3.0
+openpyxl>=3.1
+xlrd>=2.0
