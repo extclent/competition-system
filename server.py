@@ -157,8 +157,7 @@ def auto_suggest_tags_for_row(row):
         scope = level_text if tag in LEVEL_TAGS else base_text
         if any(k.lower() in scope for k in kws):
             tags.add(tag)
-    if row.get('level'):
-        tags.add(str(row['level']))
+    # level 字段只用于匹配 LEVEL_TAGS，不再把 level 原文直接塞进 tags
     for t in split_category(row.get('category', '')):
         tags.add(t)
     return list(tags)
