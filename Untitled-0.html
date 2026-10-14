@@ -79,6 +79,55 @@
     transition: background 0.15s;
   }
   .collapse-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* ===== 首页欢迎区 ===== */
+  .home-page { display: none; }
+  .home-page.active { display: block; }
+  .data-page.active { display: block; }
+  .data-page { display: none; }
+  .hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 14px; padding: 32px 28px;
+    color: #fff; margin-bottom: 20px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ''; position: absolute; right: -40px; top: -40px;
+    width: 240px; height: 240px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+  }
+  .hero h1 { color: #fff; text-align: left; font-size: 26px; margin: 0 0 8px; }
+  .hero p { opacity: 0.9; font-size: 14px; margin: 0; }
+  .home-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin-bottom: 20px;
+  }
+  .home-stat {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border-left: 4px solid #667eea;
+  }
+  .home-stat .num { font-size: 28px; font-weight: 700; color: #2c3e50; }
+  .home-stat .label { color: #888; font-size: 13px; margin-top: 4px; }
+  .quick-actions {
+    background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
+  }
+  .quick-actions h3 { margin-bottom: 16px; font-size: 16px; color: #444; border-left: 4px solid #667eea; padding-left: 10px; }
+  .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .quick-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 22px 12px; background: linear-gradient(135deg, #f5f7ff, #eef0ff);
+    border-radius: 10px; cursor: pointer; text-decoration: none;
+    color: #555; font-size: 14px; font-weight: 600;
+    transition: all 0.2s; border: 1px solid transparent;
+  }
+  .quick-card:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff; transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(102,126,234,0.35);
+  }
+  .quick-card .q-icon { font-size: 28px; margin-bottom: 8px; }
   .container { padding: 20px; max-width: 1200px; width: 100%; }
   h1 { color: #fff; text-align: center; margin-bottom: 30px; font-size: 28px; }
   .panel {
@@ -283,14 +332,11 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo"><span>🏆</span><span class="sidebar-logo-text">&nbsp;比赛管理与筛选系统</span></div>
     <nav class="sidebar-nav">
-      <a class="nav-item active" onclick="switchPage('data')">
+      <a class="nav-item active" onclick="switchPage('home')">
+        <span class="nav-icon">🏠</span><span>首页</span>
+      </a>
+      <a class="nav-item" onclick="switchPage('data')">
         <span class="nav-icon">📊</span><span>比赛数据</span>
-      </a>
-      <a class="nav-item" onclick="switchPage('entry')">
-        <span class="nav-icon">➕</span><span>录入比赛</span>
-      </a>
-      <a class="nav-item" onclick="switchPage('import')">
-        <span class="nav-icon">📥</span><span>批量导入</span>
       </a>
       <a class="nav-item" onclick="switchPage('settings')">
         <span class="nav-icon">⚙️</span><span>系统设置</span>
@@ -301,11 +347,37 @@
     <header class="topbar">
       <div style="display:flex;align-items:center;">
         <button class="collapse-btn" onclick="toggleSidebar()" title="折叠侧边栏">☰</button>
-        <h2 id="topbar-title">比赛数据</h2>
+        <h2 id="topbar-title">首页</h2>
       </div>
       <div class="topbar-user"><span>👤</span><span>管理员</span></div>
     </header>
     <div class="container">
+
+      <!-- 首页 -->
+      <div class="home-page active" id="home-page">
+        <div class="hero">
+          <h1>👋 欢迎回来，这里是比赛管理概览</h1>
+          <p>快速查看比赛数据、进入常用功能，轻松管理所有赛事</p>
+        </div>
+        <div class="home-grid">
+          <div class="home-stat"><div class="num" id="home-stat-total">0</div><div class="label">比赛总数</div></div>
+          <div class="home-stat"><div class="num" id="home-stat-tags">0</div><div class="label">标签种类</div></div>
+          <div class="home-stat"><div class="num" id="home-stat-levels">0</div><div class="label">赛事级别</div></div>
+          <div class="home-stat"><div class="num" id="home-stat-recent">0</div><div class="label">近 30 天新增</div></div>
+        </div>
+        <div class="quick-actions">
+          <h3>快捷入口</h3>
+          <div class="quick-grid">
+            <a class="quick-card" onclick="openFormModal()"><span class="q-icon">➕</span>录入比赛</a>
+            <a class="quick-card" onclick="openImportModal()"><span class="q-icon">📥</span>批量导入</a>
+            <a class="quick-card" onclick="switchPage('data')"><span class="q-icon">📊</span>比赛数据</a>
+            <a class="quick-card" onclick="downloadTemplate()"><span class="q-icon">📄</span>下载模板</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 比赛数据页 -->
+      <div class="data-page" id="data-page">
       <div class="stats">
         <div class="stat-card"><div class="num" id="stat-total">0</div><div class="label">比赛总数</div></div>
         <div class="stat-card"><div class="num" id="stat-tags">0</div><div class="label">标签种类</div></div>
@@ -361,6 +433,7 @@
     <h2>比赛列表</h2>
     <div id="competition-list"></div>
   </div>
+      </div>
     </div>
   </div>
 </div>
@@ -376,18 +449,42 @@ function toggleSidebar() {
 })();
 function switchPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  var map = { data: '比赛数据', entry: '录入比赛', import: '批量导入', settings: '系统设置' };
+  var map = { home: '首页', data: '比赛数据', settings: '系统设置' };
   document.getElementById('topbar-title').textContent = map[page] || '比赛管理';
   var items = document.querySelectorAll('.nav-item');
   items.forEach(n => {
     var text = n.textContent.trim();
     if (text === map[page]) n.classList.add('active');
   });
-  if (page === 'entry') openFormModal();
-  else if (page === 'import') openImportModal();
+  document.getElementById('home-page').classList.toggle('active', page === 'home');
+  document.getElementById('data-page').classList.toggle('active', page === 'data');
+  if (page === 'home') renderHomeStats();
   else if (page === 'settings') alert('系统设置功能暂未开放');
-  else if (page === 'data') {}
   if (event) event.preventDefault();
+}
+function renderHomeStats() {
+  if (!competitions.length) {
+    document.getElementById('home-stat-total').textContent = '0';
+    document.getElementById('home-stat-tags').textContent = '0';
+    document.getElementById('home-stat-levels').textContent = '0';
+    document.getElementById('home-stat-recent').textContent = '0';
+    return;
+  }
+  var levels = new Set();
+  var tags = new Set();
+  competitions.forEach(c => {
+    if (c.level) levels.add(c.level);
+    (c.tags || []).forEach(t => tags.add(t));
+  });
+  var now = Date.now();
+  var recent = competitions.filter(c => {
+    var d = new Date(c.createdAt || 0);
+    return (now - d.getTime()) / 86400000 <= 30;
+  }).length;
+  document.getElementById('home-stat-total').textContent = competitions.length;
+  document.getElementById('home-stat-tags').textContent = tags.size;
+  document.getElementById('home-stat-levels').textContent = levels.size;
+  document.getElementById('home-stat-recent').textContent = recent;
 }
 let competitions = [];
 let selectedTags = new Set();
@@ -401,6 +498,7 @@ async function fetchCompetitions() {
     const r = await fetch('/api/competitions');
     competitions = await r.json();
     renderAll();
+    renderHomeStats();
   } catch (e) {
     console.error('加载比赛列表失败', e);
     document.getElementById('competition-list').innerHTML =
