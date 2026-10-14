@@ -139,7 +139,7 @@
     box-shadow: 0 6px 18px rgba(102,126,234,0.35);
   }
   .quick-card .q-icon { font-size: 28px; margin-bottom: 8px; }
-  .container { padding: 20px; max-width: 1200px; width: 100%; }
+  .container { padding: 24px 32px; width: 100%; }
   h1 { color: #fff; text-align: center; margin-bottom: 30px; font-size: 28px; }
   .panel {
     background: #fff; border-radius: 12px; padding: 24px;
@@ -385,6 +385,10 @@
             <a class="quick-card" onclick="downloadTemplate()"><span class="q-icon">📄</span>下载模板</a>
           </div>
         </div>
+        <div class="panel" style="display:block;">
+          <h2>最近录入的比赛</h2>
+          <div id="home-recent" style="font-size:14px;"></div>
+        </div>
       </div>
 
       <!-- 比赛数据页 -->
@@ -496,6 +500,24 @@ function renderHomeStats() {
   document.getElementById('home-stat-tags').textContent = tags.size;
   document.getElementById('home-stat-levels').textContent = levels.size;
   document.getElementById('home-stat-recent').textContent = recent;
+  var recentDiv = document.getElementById('home-recent');
+  if (!competitions.length) {
+    recentDiv.innerHTML = '<div class="empty">暂无比赛数据</div>';
+  } else {
+    var sorted = competitions.slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+    var top = sorted.slice(0, 6);
+    recentDiv.innerHTML = top.map(function(c){
+      var level = c.level || '';
+      var time = c.signupTimeLabel || c.signupTime || '';
+      var url = (c.signupLink||'').trim();
+      var linkHtml = url ? '<a href="'+url+'" target="_blank" rel="noopener" style="color:#667eea;text-decoration:none;">报名链接</a>' : '';
+      return '<div style="padding:10px 0;border-bottom:1px dashed #eee;display:flex;justify-content:space-between;align-items:center;">'
+        + '<div style="min-width:0;flex:1;"><div style="font-weight:600;color:#2c3e50;">' + (c.name||'未命名') + '</div>'
+        + '<div style="color:#888;font-size:12px;margin-top:2px;">' + (level?level+' · ':'') + time + '</div></div>'
+        + '<div style="flex-shrink:0;margin-left:12px;">' + linkHtml + '</div>'
+        + '</div>';
+    }).join('');
+  }
 }
 let competitions = [];
 let selectedTags = new Set();
