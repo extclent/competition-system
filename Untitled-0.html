@@ -135,6 +135,42 @@
     box-shadow: 0 6px 18px rgba(102,126,234,0.35);
   }
   .quick-card .q-icon { font-size: 28px; margin-bottom: 8px; }
+  /* 项目类型占比环形图 */
+  .chart-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 768px) { .chart-grid { grid-template-columns: 1fr 1fr; } }
+  .chart-card {
+    background: #fff; border-radius: 12px; padding: 22px 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+  .chart-card h3 {
+    margin: 0 0 18px 0; font-size: 16px; color: #1e2d3d; font-weight: 700;
+    padding-left: 10px; border-left: 4px solid #667eea;
+  }
+  .donut-wrap {
+    display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+  }
+  .donut-svg { flex-shrink: 0; }
+  .donut-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 180px; }
+  .legend-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 12px; border-radius: 8px;
+    background: #f8f9fd; font-size: 13px;
+  }
+  .legend-row .legend-left { display: flex; align-items: center; gap: 10px; }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .legend-name { color: #2d3f54; font-weight: 500; }
+  .legend-bar-wrap {
+    width: 120px; height: 6px; background: #eef0f5; border-radius: 3px; overflow: hidden;
+  }
+  .legend-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+  .legend-count { color: #7a8899; font-size: 12px; min-width: 70px; text-align: right; }
+  .legend-count .pct { color: #1e2d3d; font-weight: 700; margin-right: 6px; }
   .container { padding: 24px 32px; width: 100%; }
   h1 { color: #fff; text-align: center; margin-bottom: 30px; font-size: 28px; }
   .panel {
@@ -501,6 +537,15 @@
           <div class="home-stat" data-icon="⭐"><div class="num" id="home-stat-levels">0</div><div class="label">赛事级别</div></div>
           <div class="home-stat" data-icon="📈"><div class="num" id="home-stat-recent">0</div><div class="label">近 30 天新增</div></div>
         </div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3>🏷️ 项目类型占比</h3>
+            <div class="donut-wrap">
+              <svg class="donut-svg" id="typeDonut" width="170" height="170" viewBox="0 0 170 170"></svg>
+              <div class="donut-legend" id="typeLegend"></div>
+            </div>
+          </div>
+        </div>
         <div class="quick-actions">
           <h3>快捷入口</h3>
           <div class="quick-grid">
@@ -643,7 +688,82 @@ function renderHomeStats() {
         + '</div>';
     }).join('');
   }
+  renderTypeDonut();
 }
+
+function renderTypeDonut() {
+  const COLORS = {
+    '创新创业类': '#667eea',
+    '技术科创类': '#43e97b',
+    '经管社科类': '#fa709a',
+    '学科竞赛类': '#feca57',
+    '文艺设计类': '#54a0ff',
+  };
+  const ORDER = ['创新创业类','技术科创类','经管社科类','学科竞赛类','文艺设计类'];
+  const counts = {};
+  ORDER.forEach(k => counts[k] = 0);
+  competitions.forEach(c => {
+    const seen = new Set();
+    (c.tags || []).forEach(t => {
+      const g = classifyTag(t);
+      if (g !== 'level' && ORDER.indexOf(g) >= 0 && !seen.has(g)) {
+        seen.add(g);
+        counts[g]++;
+      }
+    });
+  });
+  const total = ORDER.reduce((s,k) => s + counts[k], 0);
+  // SVG 环形图
+  const svg = document.getElementById('typeDonut');
+  const legend = document.getElementById('typeLegend');
+  if (!svg || !legend) return;
+  const cx = 85, cy = 85, R = 62, r = 38;
+  let paths = '';
+  let cumulative = 0;
+  if (total === 0) {
+    // 空态：灰色完整环
+    paths = `<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="#eef0f5" stroke-width="${R-r}"/>`;
+  } else {
+    ORDER.forEach(k => {
+      const v = counts[k];
+      if (v === 0) return;
+      const frac = v / total;
+      const startA = cumulative * 2 * Math.PI - Math.PI / 2;
+      cumulative += frac;
+      const endA = cumulative * 2 * Math.PI - Math.PI / 2;
+      const x1 = cx + R * Math.cos(startA);
+      const y1 = cy + R * Math.sin(startA);
+      const x2 = cx + R * Math.cos(endA);
+      const y2 = cy + R * Math.sin(endA);
+      const x3 = cx + r * Math.cos(endA);
+      const y3 = cy + r * Math.sin(endA);
+      const x4 = cx + r * Math.cos(startA);
+      const y4 = cy + r * Math.sin(startA);
+      const largeArc = frac > 0.5 ? 1 : 0;
+      const d = `M${x1},${y1} A${R},${R} 0 ${largeArc} 1 ${x2},${y2} L${x3},${y3} A${r},${r} 0 ${largeArc} 0 ${x4},${y4} Z`;
+      paths += `<path d="${d}" fill="${COLORS[k]}" stroke="#fff" stroke-width="1" opacity="0.95">
+        <title>${k}: ${v} (${Math.round(frac*100)}%)</title></path>`;
+    });
+  }
+  svg.innerHTML = paths
+    + `<circle cx="${cx}" cy="${cy}" r="${r-2}" fill="#fff"/>`
+    + `<text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="22" font-weight="700" fill="#1e2d3d">${total}</text>`
+    + `<text x="${cx}" y="${cy+14}" text-anchor="middle" font-size="11" fill="#7a8899">比赛总数</text>`;
+  // 图例
+  const rows = ORDER.map(k => {
+    const v = counts[k];
+    const pct = total ? (v / total * 100) : 0;
+    return `<div class="legend-row">
+      <div class="legend-left">
+        <span class="legend-dot" style="background:${COLORS[k]}"></span>
+        <span class="legend-name">${k}</span>
+      </div>
+      <span class="legend-count"><span class="pct">${pct.toFixed(1)}%</span>${v} 场</span>
+    </div>`;
+  }).join('');
+  legend.innerHTML = rows;
+}
+
 let competitions = [];
 let selectedTags = new Set();
 let activeFilters = new Set();
