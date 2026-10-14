@@ -204,6 +204,47 @@
     border-radius: 6px; transition: all 0.2s; line-height: 1;
   }
   .modal-close:hover { background: #f0f0f0; color: #333; }
+  /* ========= 比赛列表表格 ========= */
+  .comp-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+  .comp-table thead { background: linear-gradient(135deg, #1e2d3d, #2d3f54); color: #fff; }
+  .comp-table th { padding: 14px 16px; font-weight: 600; font-size: 14px; text-align: left; white-space: nowrap; }
+  .comp-table td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; font-size: 13.5px; vertical-align: middle; }
+  .comp-table tbody tr:hover { background: #f7f9ff; }
+  .comp-table tbody tr:last-child td { border-bottom: none; }
+  .comp-table .col-name { max-width: 280px; font-weight: 600; color: #2d3f54; }
+  .comp-table .col-type { max-width: 180px; }
+  .comp-table .col-signup { max-width: 220px; color: #666; font-size: 12.5px; white-space: pre-line; }
+  .comp-table .col-status { width: 100px; text-align: center; }
+  .comp-table .col-actions { width: 140px; text-align: center; }
+  .type-chip { display: inline-block; padding: 2px 8px; margin: 2px; background: #eef2ff; color: #5b6abf; border-radius: 10px; font-size: 12px; }
+  /* 状态徽章 */
+  .status-badge { display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .status-running { background: #e6faf0; color: #17a866; }
+  .status-ended   { background: #f5f5f5; color: #888; }
+  .status-pending { background: #fff7e6; color: #d48806; }
+  .status-unknown { background: #eef2ff; color: #667eea; }
+  /* 行内按钮 */
+  .row-btn { display: inline-block; padding: 5px 12px; margin: 2px; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .row-btn-view  { background: #eef2ff; color: #5b6abf; }
+  .row-btn-view:hover   { background: #5b6abf; color: #fff; }
+  .row-btn-edit  { background: #fff7e6; color: #d48806; }
+  .row-btn-edit:hover   { background: #d48806; color: #fff; }
+  .row-btn-del   { background: #fff1f0; color: #cf1322; }
+  .row-btn-del:hover    { background: #cf1322; color: #fff; }
+  /* 详情模态内容 */
+  .detail-section { margin-bottom: 16px; }
+  .detail-section h4 { margin: 0 0 8px 0; color: #1e2d3d; font-size: 15px; padding-bottom: 6px; border-bottom: 2px solid #eef2ff; }
+  .detail-row { display: flex; margin: 4px 0; font-size: 14px; }
+  .detail-row .detail-label { width: 110px; color: #888; flex-shrink: 0; }
+  .detail-row .detail-val { color: #333; flex: 1; word-break: break-all; white-space: pre-wrap; }
+  .detail-tags .tag { background: #eef2ff; color: #5b6abf; }
+  @media (max-width: 768px) {
+    .comp-table { display: block; overflow-x: auto; }
+    .comp-table th, .comp-table td { padding: 10px 12px; font-size: 12px; }
+    .comp-table .col-name { min-width: 200px; }
+    .comp-table .col-type { min-width: 160px; }
+    .comp-table .col-signup { min-width: 180px; }
+  }
   .filter-bar {
     display: flex; flex-wrap: wrap; gap: 6px; padding: 10px;
     background: #f5f7ff; border-radius: 8px; margin-bottom: 16px;
@@ -517,6 +558,7 @@ let selectedTags = new Set();
 let activeFilters = new Set();
 let searchName = '';
 let dateRangeStart = '';
+let editingId = null;
 
 // 从后端 API 加载比赛列表
 async function fetchCompetitions() {
@@ -687,7 +729,7 @@ async function saveCompetition() {
   if (!name) { alert('请输入赛事名称'); return; }
   const precision = document.getElementById('signupPrecision').value;
   const signupTime = getSignupTime();
-  if (!signupTime) { alert('请选择报名时间'); return; }
+  if (!signupTime && !editingId) { alert('请选择报名时间'); return; }
   const comp = {
     name,
     level: document.getElementById('level').value,
@@ -702,17 +744,27 @@ async function saveCompetition() {
     compTimes: Object.assign({}, compTimes),
   };
   try {
-    const r = await fetch('/api/competitions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(comp)
-    });
+    let r;
+    if (editingId !== null) {
+      r = await fetch('/api/competitions/' + editingId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(comp)
+      });
+    } else {
+      r = await fetch('/api/competitions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(comp)
+      });
+    }
     if (r.status === 409) {
       const d = await r.json();
       alert(d.message || '该比赛已存在');
       return;
     }
     if (!r.ok) throw new Error('HTTP ' + r.status);
+    editingId = null;
     resetForm();
     await fetchCompetitions();
     closeFormModal();
@@ -722,10 +774,39 @@ async function saveCompetition() {
 }
 
 function openFormModal() {
+  editingId = null;
+  document.getElementById('form-title').textContent = '录入比赛信息';
   document.getElementById('form-modal').classList.add('active');
-  // 确保动态比赛时间字段按当前级别渲染
   renderCompTimeFields();
   suggestTags(); renderTags();
+}
+
+function openEditor(id) {
+  const c = competitions.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('form-title').textContent = '编辑比赛：' + c.name;
+  document.getElementById('name').value = c.name || '';
+  document.getElementById('level').value = c.level || '国家级';
+  document.getElementById('signupPrecision').value = c.signupPrecision || 'date';
+  document.getElementById('category').value = c.category || '';
+  document.getElementById('organizer').value = c.organizer || '';
+  document.getElementById('undertaker').value = c.undertaker || '';
+  document.getElementById('signupLink').value = c.signupLink || '';
+  compTimes = Object.assign({}, c.compTimes || {});
+  selectedTags = new Set(c.tags || []);
+  // 时间回填：简单模式下，只把 signupTimeLabel 直接当 display 文本
+  // 真实录入时用户可以看到 label 再按需重选
+  const signupField = document.getElementById('signupDate');
+  const signupMonth = document.getElementById('signupMonth');
+  // 把 signupTimeLabel 显示到一个隐藏辅助字段，让用户知道旧值
+  // 这里为简单起见，留空让用户按需重填
+  if (signupField) signupField.value = '';
+  if (signupMonth) signupMonth.value = '';
+  switchSignupInput();
+  renderCompTimeFields();
+  suggestTags(); renderTags();
+  document.getElementById('form-modal').classList.add('active');
 }
 
 function closeFormModal() {
@@ -978,6 +1059,51 @@ document.addEventListener('click', (e) => {
   }
 });
 
+function parseLatestDate(text) {
+  if (!text) return null;
+  const patterns = [
+    /(\d{4})[年\/\-\.](\d{1,2})[月\/\-\.]?/g,
+    /(\d{4})年(\d{1,2})月(\d{1,2})日/g,
+  ];
+  let latest = null;
+  for (const re of patterns) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      const y = parseInt(m[1]);
+      const mo = parseInt(m[2]);
+      const d = m[3] ? parseInt(m[3]) : 1;
+      const ts = new Date(y, mo - 1, d).getTime();
+      if (!isNaN(ts) && (latest === null || ts > latest)) latest = ts;
+    }
+  }
+  return latest;
+}
+
+function getStatus(comp) {
+  const text = (comp.signupTimeLabel || comp.signupTime || '') +
+               '\n' + Object.values(comp.compTimes || {}).join('\n');
+  const latest = parseLatestDate(text);
+  const now = new Date();
+  const nowTs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (!latest) return { key: 'unknown', label: '未知', cls: 'status-unknown' };
+  // 最晚日期 + 30天缓冲（比赛结束后可能还有补录/收尾）
+  const runningEnd = latest + 30 * 86400000;
+  if (nowTs < latest) return { key: 'pending', label: '未开始', cls: 'status-pending' };
+  if (nowTs <= runningEnd) return { key: 'running', label: '进行中', cls: 'status-running' };
+  return { key: 'ended', label: '已结束', cls: 'status-ended' };
+}
+
+function getCompType(comp) {
+  const seen = new Set();
+  const types = [];
+  for (const t of (comp.tags || [])) {
+    const g = classifyTag(t);
+    if (g !== 'level' && !seen.has(g)) { seen.add(g); types.push(g); }
+  }
+  return types;
+}
+
 function renderList() {
   const list = document.getElementById('competition-list');
   const data = getFiltered();
@@ -985,34 +1111,89 @@ function renderList() {
     list.innerHTML = '<div class="empty">📭 暂无比赛数据' + (activeFilters.size ? '，或当前筛选无匹配项' : '，请录入第一条比赛') + '</div>';
     return;
   }
-  const colors = ['#667eea','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#30cfd0','#a8edea','#ff9a9e','#d4fc79'];
-  list.innerHTML = data.map(c => {
-    const tagHtml = c.tags.map((t,i) =>
-      `<span class="tag" style="background:${colors[i%colors.length]}22;color:${colors[i%colors.length]}">${t}</span>`
-    ).join('');
-    const compTimesHtml = c.compTimes && Object.keys(c.compTimes).length
-      ? Object.entries(c.compTimes)
-          .filter(([k,v]) => v)
-          .map(([k,v]) => `<span>🏁 ${escapeHtml(k)}: ${escapeHtml(v)}</span>`).join('')
-      : '';
-    return `
-      <div class="competition-card">
-        <h3>${escapeHtml(c.name)}</h3>
-        <div class="competition-meta">
-          ${c.level ? `<span>📊 级别: ${escapeHtml(c.level)}</span>`:''}
-          ${c.signupTimeLabel ? `<span>⏰ 报名时间: ${escapeHtml(c.signupTimeLabel)}</span>`:''}
-          ${c.category ? `<span>🏷 赛道: ${escapeHtml(c.category)}</span>`:''}
-          ${c.organizer ? `<span>主办: ${escapeHtml(c.organizer)}</span>`:''}
-          ${c.undertaker ? `<span>🤝 承办: ${escapeHtml(c.undertaker)}</span>`:''}
+  list.innerHTML = `
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th class="col-name">比赛名称</th>
+          <th class="col-type">比赛类型</th>
+          <th class="col-signup">报名时间</th>
+          <th class="col-status">状态</th>
+          <th class="col-actions">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.map(c => {
+          const st = getStatus(c);
+          const types = getCompType(c);
+          const signup = c.signupTimeLabel || c.signupTime || '—';
+          return `<tr>
+            <td class="col-name">${escapeHtml(c.name)}</td>
+            <td class="col-type">${types.length ? types.map(t => `<span class="type-chip">${escapeHtml(t)}</span>`).join('') : '—'}</td>
+            <td class="col-signup">${escapeHtml(signup)}</td>
+            <td class="col-status"><span class="status-badge ${st.cls}">${st.label}</span></td>
+            <td class="col-actions">
+              <button class="row-btn row-btn-view" onclick="openDetail(${c.id})">查看</button>
+              <button class="row-btn row-btn-edit" onclick="openEditor(${c.id})">管理</button>
+              <button class="row-btn row-btn-del" onclick="deleteCompetition(${c.id})">删除</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function openDetail(id) {
+  const c = competitions.find(x => x.id === id);
+  if (!c) return;
+  const st = getStatus(c);
+  const types = getCompType(c);
+  const ctHtml = c.compTimes && Object.keys(c.compTimes).length
+    ? Object.entries(c.compTimes).filter(([k,v])=>v).map(([k,v]) =>
+        `<div class="detail-row"><div class="detail-label">${escapeHtml(k)}</div><div class="detail-val">${escapeHtml(v)}</div></div>`
+      ).join('')
+    : '';
+  const tagsHtml = (c.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+  const html = `
+    <div class="modal-overlay detail-modal active">
+      <div class="modal-content" style="max-width:720px">
+        <div class="modal-header">
+          <h3>🏆 ${escapeHtml(c.name)}</h3>
+          <span class="modal-close" onclick="closeModal()">×</span>
         </div>
-        ${compTimesHtml ? `<div class="competition-meta">${compTimesHtml}</div>`:''}
-        ${c.signupLink ? `<div class="competition-desc"><a href="${escapeHtml(c.signupLink)}" target="_blank" rel="noopener" style="color:#667eea;">🔗 报名链接：${escapeHtml(c.signupLink)}</a></div>`:''}
-        <div class="competition-tags">${tagHtml}</div>
-        <div style="margin-top:10px;text-align:right">
-          <button class="btn btn-danger" onclick="deleteCompetition(${c.id})">删除</button>
+        <div style="margin-bottom:12px">
+          <span class="status-badge ${st.cls}">${st.label}</span>
+          ${c.level ? `<span style="margin-left:10px;color:#5b6abf;font-weight:600">${escapeHtml(c.level)}</span>` : ''}
+          ${types.map(t => `<span class="type-chip" style="margin-left:4px">${escapeHtml(t)}</span>`).join('')}
         </div>
-      </div>`;
-  }).join('');
+        <div class="detail-section">
+          <h4>基本信息</h4>
+          ${c.category ? `<div class="detail-row"><div class="detail-label">参赛赛道</div><div class="detail-val">${escapeHtml(c.category)}</div></div>` : ''}
+          ${c.organizer ? `<div class="detail-row"><div class="detail-label">主办单位</div><div class="detail-val">${escapeHtml(c.organizer)}</div></div>` : ''}
+          ${c.undertaker ? `<div class="detail-row"><div class="detail-label">承办单位</div><div class="detail-val">${escapeHtml(c.undertaker)}</div></div>` : ''}
+        </div>
+        <div class="detail-section">
+          <h4>报名与赛程</h4>
+          ${c.signupTimeLabel ? `<div class="detail-row"><div class="detail-label">时间安排</div><div class="detail-val">${escapeHtml(c.signupTimeLabel)}</div></div>` : ''}
+          ${ctHtml}
+          ${c.signupLink ? `<div class="detail-row"><div class="detail-label">报名链接</div><div class="detail-val"><a href="${escapeHtml(c.signupLink)}" target="_blank">${escapeHtml(c.signupLink)}</a></div></div>` : ''}
+        </div>
+        ${tagsHtml ? `<div class="detail-section detail-tags"><h4>标签</h4>${tagsHtml}</div>` : ''}
+        <div class="actions" style="justify-content:flex-end">
+          <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+          <button class="btn btn-primary" onclick="closeModal();openEditor(${c.id})">编辑管理</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  const dm = document.querySelector('.detail-modal');
+  dm.addEventListener('click', e => { if (e.target.classList.contains('detail-modal')) closeModal(); });
+}
+
+function closeModal() {
+  const m = document.querySelector('.detail-modal');
+  if (m) m.remove();
 }
 
 function escapeHtml(s) {
@@ -1142,7 +1323,7 @@ fetchCompetitions();
 <div class="modal-overlay" id="form-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>录入比赛信息</h3>
+      <h3 id="form-title">录入比赛信息</h3>
       <span class="modal-close" onclick="closeFormModal()">✕</span>
     </div>
     <div class="form-grid">

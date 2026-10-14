@@ -296,6 +296,43 @@ def create_competition():
     return jsonify({'ok': True, 'id': comp['id']})
 
 
+@app.route('/api/competitions/<float:sid>', methods=['PUT', 'PATCH'])
+@app.route('/api/competitions/<int:sid>', methods=['PUT', 'PATCH'])
+def update_competition(sid):
+    data = request.get_json(force=True)
+    conn = get_db()
+    existing = conn.execute('SELECT id FROM competitions WHERE id = ?', (sid,)).fetchone()
+    if not existing:
+        conn.close()
+        return jsonify({'error': '比赛不存在'}), 404
+    comp_times = data.get('compTimes', {})
+    if not isinstance(comp_times, dict):
+        comp_times = {}
+    comp = {
+        'name': data.get('name', ''),
+        'level': data.get('level', ''),
+        'category': data.get('category', ''),
+        'organizer': data.get('organizer', ''),
+        'undertaker': data.get('undertaker', ''),
+        'signup_link': data.get('signupLink', ''),
+        'signup_precision': data.get('signupPrecision', 'date'),
+        'signup_time': data.get('signupTime', ''),
+        'signup_time_label': data.get('signupTimeLabel', ''),
+        'tags': json.dumps(data.get('tags', []), ensure_ascii=False),
+        'comp_times': json.dumps(comp_times, ensure_ascii=False),
+    }
+    conn.execute('''UPDATE competitions SET
+        name=?, level=?, category=?, organizer=?, undertaker=?, signup_link=?,
+        signup_precision=?, signup_time=?, signup_time_label=?, tags=?, comp_times=?
+        WHERE id=?''', (
+        comp['name'], comp['level'], comp['category'], comp['organizer'], comp['undertaker'],
+        comp['signup_link'], comp['signup_precision'], comp['signup_time'], comp['signup_time_label'],
+        comp['tags'], comp['comp_times'], sid))
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True})
+
+
 @app.route('/api/competitions/<float:sid>', methods=['DELETE'])
 @app.route('/api/competitions/<int:sid>', methods=['DELETE'])
 def delete_competition(sid):
