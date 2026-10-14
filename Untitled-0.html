@@ -231,13 +231,103 @@
   .row-btn-edit:hover   { background: #d48806; color: #fff; }
   .row-btn-del   { background: #fff1f0; color: #cf1322; }
   .row-btn-del:hover    { background: #cf1322; color: #fff; }
-  /* 详情模态内容 */
-  .detail-section { margin-bottom: 16px; }
-  .detail-section h4 { margin: 0 0 8px 0; color: #1e2d3d; font-size: 15px; padding-bottom: 6px; border-bottom: 2px solid #eef2ff; }
-  .detail-row { display: flex; margin: 4px 0; font-size: 14px; }
-  .detail-row .detail-label { width: 110px; color: #888; flex-shrink: 0; }
-  .detail-row .detail-val { color: #333; flex: 1; word-break: break-all; white-space: pre-wrap; }
-  .detail-tags .tag { background: #eef2ff; color: #5b6abf; }
+  /* 详情弹窗样式重写 */
+  .detail-modal .modal-content {
+    background: #fff; border-radius: 16px; overflow: hidden;
+    padding: 0; max-width: 760px; box-shadow: 0 20px 60px rgba(30,45,61,0.35);
+    animation: detailIn 0.22s ease;
+  }
+  @keyframes detailIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .detail-hero {
+    padding: 28px 32px 24px;
+    background: linear-gradient(135deg, #1e2d3d 0%, #4a3f8a 60%, #667eea 100%);
+    color: #fff; position: relative;
+  }
+  .detail-hero .modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: rgba(255,255,255,0.15); color: #fff; width: 30px; height: 30px;
+    border-radius: 50%; text-align: center; line-height: 30px; font-size: 18px;
+    transition: background 0.2s;
+  }
+  .detail-hero .modal-close:hover { background: rgba(255,255,255,0.3); }
+  .detail-hero h2 {
+    margin: 0 0 14px 0; font-size: 22px; font-weight: 700;
+    padding: 0; border: none; color: #fff; letter-spacing: 0.5px;
+  }
+  .detail-badges { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .detail-badges .status-badge {
+    background: rgba(255,255,255,0.2); color: #fff; padding: 5px 14px;
+    font-size: 12.5px; border: 1px solid rgba(255,255,255,0.35);
+  }
+  .detail-badges .status-running { background: #17a866; border-color: #17a866; }
+  .detail-badges .status-ended   { background: #6b7280; border-color: #6b7280; }
+  .detail-badges .status-pending { background: #d48806; border-color: #d48806; }
+  .detail-badges .status-unknown { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.4); }
+  .detail-badges .level-pill {
+    padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: 600;
+    background: #ffe066; color: #1e2d3d;
+  }
+  .detail-badges .type-chip {
+    background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.3);
+  }
+  .detail-body { padding: 24px 28px 8px; max-height: 48vh; overflow-y: auto; }
+  .detail-body::-webkit-scrollbar { width: 6px; }
+  .detail-body::-webkit-scrollbar-thumb { background: #d0d7e0; border-radius: 3px; }
+  .detail-section {
+    background: #f7f9ff; border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 14px; border-left: 4px solid #667eea;
+  }
+  .detail-section:nth-of-type(2) { border-left-color: #17a866; }
+  .detail-section:nth-of-type(3) { border-left-color: #d48806; }
+  .detail-section h4 {
+    margin: 0 0 10px 0; color: #1e2d3d; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.5px; padding: 0; border: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .detail-row {
+    display: grid; grid-template-columns: 90px 1fr; gap: 10px;
+    margin: 6px 0; font-size: 13.5px; line-height: 1.55;
+  }
+  .detail-row .detail-label {
+    color: #7a8899; font-weight: 500; padding-top: 1px;
+  }
+  .detail-row .detail-val { color: #2d3f54; word-break: break-word; white-space: pre-wrap; }
+  .detail-section .detail-row:last-child { margin-bottom: 0; }
+  .detail-link-btn {
+    display: inline-block; padding: 4px 12px; margin-top: 2px;
+    background: linear-gradient(135deg, #667eea, #5a6fd6);
+    color: #fff; border-radius: 14px; font-size: 12.5px;
+    text-decoration: none; font-weight: 600; transition: all 0.15s;
+  }
+  .detail-link-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.4); }
+  .detail-tags { padding: 16px 20px; }
+  .detail-tags h4 { margin-bottom: 12px; color: #1e2d3d; font-size: 14px; font-weight: 700; padding: 0; border: none; }
+  .detail-tags .tag {
+    background: #eef2ff; color: #5b6abf; border: 1px solid #d9e0ff;
+    border-radius: 12px; padding: 3px 11px; font-size: 12px; margin: 3px 4px 3px 0;
+  }
+  .detail-footer {
+    padding: 16px 28px 22px; display: flex; justify-content: flex-end; gap: 10px;
+    border-top: 1px solid #eef0f5; background: #fafbfe;
+  }
+  .detail-footer .btn { padding: 9px 22px; border-radius: 8px; font-weight: 600; }
+  .detail-footer .btn-secondary { background: #eef0f5; color: #4a5568; }
+  .detail-footer .btn-secondary:hover { background: #dfe3ea; }
+  .detail-footer .btn-primary {
+    background: linear-gradient(135deg, #667eea, #5568d3);
+    box-shadow: 0 4px 14px rgba(102,126,234,0.35);
+  }
+  .detail-footer .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(102,126,234,0.45); }
+  @media (max-width: 640px) {
+    .detail-body { padding: 16px; }
+    .detail-hero { padding: 22px 20px 18px; }
+    .detail-hero h2 { font-size: 18px; }
+    .detail-row { grid-template-columns: 1fr; gap: 2px; }
+    .detail-row .detail-label { color: #9aa6b5; font-size: 12px; }
+  }
   @media (max-width: 768px) {
     .comp-table { display: block; overflow-x: auto; }
     .comp-table th, .comp-table td { padding: 10px 12px; font-size: 12px; }
@@ -1156,32 +1246,35 @@ function openDetail(id) {
       ).join('')
     : '';
   const tagsHtml = (c.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+  const close = `<span class="modal-close" onclick="closeModal()">×</span>`;
   const html = `
     <div class="modal-overlay detail-modal active">
-      <div class="modal-content" style="max-width:720px">
-        <div class="modal-header">
-          <h3>🏆 ${escapeHtml(c.name)}</h3>
-          <span class="modal-close" onclick="closeModal()">×</span>
+      <div class="modal-content">
+        <div class="detail-hero">
+          ${close}
+          <h2>🏆 ${escapeHtml(c.name)}</h2>
+          <div class="detail-badges">
+            <span class="status-badge ${st.cls}">${st.label}</span>
+            ${c.level ? `<span class="level-pill">${escapeHtml(c.level)}</span>` : ''}
+            ${types.map(t => `<span class="type-chip">${escapeHtml(t)}</span>`).join('')}
+          </div>
         </div>
-        <div style="margin-bottom:12px">
-          <span class="status-badge ${st.cls}">${st.label}</span>
-          ${c.level ? `<span style="margin-left:10px;color:#5b6abf;font-weight:600">${escapeHtml(c.level)}</span>` : ''}
-          ${types.map(t => `<span class="type-chip" style="margin-left:4px">${escapeHtml(t)}</span>`).join('')}
+        <div class="detail-body">
+          <div class="detail-section">
+            <h4>📋 基本信息</h4>
+            ${c.category ? `<div class="detail-row"><div class="detail-label">参赛赛道</div><div class="detail-val">${escapeHtml(c.category)}</div></div>` : ''}
+            ${c.organizer ? `<div class="detail-row"><div class="detail-label">主办单位</div><div class="detail-val">${escapeHtml(c.organizer)}</div></div>` : ''}
+            ${c.undertaker ? `<div class="detail-row"><div class="detail-label">承办单位</div><div class="detail-val">${escapeHtml(c.undertaker)}</div></div>` : ''}
+          </div>
+          <div class="detail-section">
+            <h4>📅 报名与赛程</h4>
+            ${c.signupTimeLabel ? `<div class="detail-row"><div class="detail-label">时间安排</div><div class="detail-val">${escapeHtml(c.signupTimeLabel)}</div></div>` : ''}
+            ${ctHtml}
+            ${c.signupLink ? `<div class="detail-row"><div class="detail-label">报名链接</div><div class="detail-val"><a href="${escapeHtml(c.signupLink)}" target="_blank" class="detail-link-btn">立即报名 ↗</a></div></div>` : ''}
+          </div>
+          ${tagsHtml ? `<div class="detail-tags"><h4>🏷 标签</h4>${tagsHtml}</div>` : ''}
         </div>
-        <div class="detail-section">
-          <h4>基本信息</h4>
-          ${c.category ? `<div class="detail-row"><div class="detail-label">参赛赛道</div><div class="detail-val">${escapeHtml(c.category)}</div></div>` : ''}
-          ${c.organizer ? `<div class="detail-row"><div class="detail-label">主办单位</div><div class="detail-val">${escapeHtml(c.organizer)}</div></div>` : ''}
-          ${c.undertaker ? `<div class="detail-row"><div class="detail-label">承办单位</div><div class="detail-val">${escapeHtml(c.undertaker)}</div></div>` : ''}
-        </div>
-        <div class="detail-section">
-          <h4>报名与赛程</h4>
-          ${c.signupTimeLabel ? `<div class="detail-row"><div class="detail-label">时间安排</div><div class="detail-val">${escapeHtml(c.signupTimeLabel)}</div></div>` : ''}
-          ${ctHtml}
-          ${c.signupLink ? `<div class="detail-row"><div class="detail-label">报名链接</div><div class="detail-val"><a href="${escapeHtml(c.signupLink)}" target="_blank">${escapeHtml(c.signupLink)}</a></div></div>` : ''}
-        </div>
-        ${tagsHtml ? `<div class="detail-section detail-tags"><h4>标签</h4>${tagsHtml}</div>` : ''}
-        <div class="actions" style="justify-content:flex-end">
+        <div class="detail-footer">
           <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
           <button class="btn btn-primary" onclick="closeModal();openEditor(${c.id})">编辑管理</button>
         </div>
