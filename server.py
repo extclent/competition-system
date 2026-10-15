@@ -191,6 +191,16 @@ def init_db():
     # 清理已废弃的大赛通知模块遗留表
     conn.execute('DROP TABLE IF EXISTS notices')
     conn.execute('DROP TABLE IF EXISTS notice_sources')
+
+    # 导师推荐（管理员在系统设置中自行维护）
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS mentors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT, title TEXT, department TEXT,
+            direction TEXT, contact TEXT, intro TEXT,
+            created_at TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -243,7 +253,10 @@ def _method_not_allowed(e):
 
 @app.route('/')
 def index():
-    return send_file(HTML_FILE)
+    resp = send_file(HTML_FILE)
+    # 禁止浏览器缓存首页 HTML，避免前端更新后用户端仍加载旧版
+    resp.headers['Cache-Control'] = 'no-cache, must-revalidate'
+    return resp
 
 
 @app.route('/api/competitions', methods=['GET'])
@@ -517,6 +530,80 @@ def excel_template():
         return jsonify({'error': '模板文件不存在: ' + template_path}), 404
     return send_file(template_path, as_attachment=True, download_name='竞赛调研模板.xls',
                      mimetype='application/vnd.ms-excel')
+
+
+# ---------------- 导师推荐 ----------------
+def mentor_row_to_dict(row):
+    return {
+        'id': row['id'],
+        'name': row['name'] or '',
+        'title': row['title'] or '',
+        'department': row['department'] or '',
+        'direction': row['direction'] or '',
+        'contact': row['contact'] or '',
+        'intro': row['intro'] or '',
+        'createdAt': row['created_at'] or '',
+    }
+
+
+@app.route('/api/mentors', methods=['GET'])
+def mentors_list():
+    conn = get_db()
+    rows = conn.execute('SELECT * FROM mentors ORDER BY id DESC').fetchall()
+    conn.close()
+    return jsonify([mentor_row_to_dict(r) for r in rows])
+
+
+@app.route('/api/mentors', methods=['POST'])
+def mentors_create():
+    data = request.get_json(silent=True) or {}
+    name = str(data.get('name', '')).strip()
+    if not name:
+        return jsonify({'error': '导师姓名不能为空'}), 400
+    conn = get_db()
+    cur = conn.execute(
+        'INSERT INTO mentors (name, title, department, direction, contact, intro, created_at) '
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (name, str(data.get('title', '')).strip(), str(data.get('department', '')).strip(),
+         str(data.get('direction', '')).strip(), str(data.get('contact', '')).strip(),
+         str(data.get('intro', '')).strip(),
+         datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+    conn.commit()
+    row = conn.execute('SELECT * FROM mentors WHERE id = ?', (cur.lastrowid,)).fetchone()
+    conn.close()
+    return jsonify(mentor_row_to_dict(row)), 201
+
+
+@app.route('/api/mentors/<int:mid>', methods=['PUT', 'PATCH'])
+def mentors_update(mid):
+    data = request.get_json(silent=True) or {}
+    name = str(data.get('name', '')).strip()
+    if not name:
+        return jsonify({'error': '导师姓名不能为空'}), 400
+    conn = get_db()
+    cur = conn.execute(
+        'UPDATE mentors SET name=?, title=?, department=?, direction=?, contact=?, intro=? WHERE id=?',
+        (name, str(data.get('title', '')).strip(), str(data.get('department', '')).strip(),
+         str(data.get('direction', '')).strip(), str(data.get('contact', '')).strip(),
+         str(data.get('intro', '')).strip(), mid))
+    conn.commit()
+    changed = cur.rowcount
+    row = conn.execute('SELECT * FROM mentors WHERE id = ?', (mid,)).fetchone() if changed else None
+    conn.close()
+    if not row:
+        return jsonify({'error': '导师不存在'}), 404
+    return jsonify(mentor_row_to_dict(row))
+
+
+@app.route('/api/mentors/<int:mid>', methods=['DELETE'])
+def mentors_delete(mid):
+    conn = get_db()
+    cur = conn.execute('DELETE FROM mentors WHERE id = ?', (mid,))
+    conn.commit()
+    conn.close()
+    if not cur.rowcount:
+        return jsonify({'error': '导师不存在'}), 404
+    return jsonify({'ok': True})
 
 
 # 确保数据库就绪：放在模块级，使 WSGI 部署（如 PythonAnywhere 导入 server 模块）时也会建表，
