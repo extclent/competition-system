@@ -117,6 +117,8 @@
   .settings-page.active { display: block; }
   /* 导师推荐卡片 */
   .mentor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  /* 首页导师推荐：一行两个 */
+  #home-mentors { grid-template-columns: 1fr 1fr; gap: 10px; }
   .mentor-card {
     background: #f8f9fd; border: 1px solid #eceef5; border-radius: 10px; padding: 14px 16px;
     transition: box-shadow 0.2s, transform 0.2s;
@@ -138,20 +140,23 @@
   }
   .mentor-card .m-contact { color: #2d3f54; font-size: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e3e6f0; }
   /* 待办事项（首页） */
-  .todo-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 2px; border-bottom: 1px dashed #eee; cursor: pointer; }
-  .todo-item:last-child { border-bottom: none; }
+  .todo-item { display: flex; gap: 10px; align-items: flex-start; padding: 7px 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s, opacity 0.15s; }
+  .todo-item:hover { background: #f5f7ff; }
+  .todo-item.done { opacity: 0.6; }
+  .todo-item.done:hover { opacity: 0.85; }
   .todo-check {
     width: 18px; height: 18px; border-radius: 50%; border: 2px solid #c9d2e0; flex-shrink: 0;
     margin-top: 2px; font-size: 12px; line-height: 1; color: #fff;
     display: flex; align-items: center; justify-content: center; transition: all 0.15s;
   }
   .todo-item.done .todo-check { background: #667eea; border-color: #667eea; }
-  .todo-item.done:hover .todo-check { background: #fff; border-color: #c9d2e0; }
-  .todo-item.done:hover .todo-check::after { content: '↩'; color: #98a2b3; font-size: 11px; }
   .todo-item .todo-name { font-weight: 600; color: #2c3e50; font-size: 13px; }
   .todo-item.done .todo-name { color: #a0a8b5; text-decoration: line-through; }
   .todo-item .todo-meta { color: #98a2b3; font-size: 12px; margin-top: 2px; }
   .todo-head { display: flex; justify-content: space-between; align-items: center; }
+  .todo-head h2 { margin-bottom: 0; }
+  .todo-clear { font-size: 11px; font-weight: 600; color: #98a2b3; cursor: pointer; padding: 3px 10px; border: 1px solid #e3e6f0; border-radius: 11px; transition: all 0.15s; flex-shrink: 0; margin-bottom: 10px; }
+  .todo-clear:hover { color: #667eea; border-color: #667eea; background: #f7f8ff; }
   .todo-add-fab {
     position: absolute; right: 14px; bottom: 8px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -332,10 +337,12 @@
   .comp-table td { padding: 14px 16px; border-bottom: 1px solid #f0f2f5; font-size: 13.5px; vertical-align: middle; }
   .comp-table tbody tr:hover { background: #f7f9ff; }
   .comp-table tbody tr:last-child td { border-bottom: none; }
-  .comp-table .col-name { max-width: 280px; font-weight: 600; color: #2d3f54; }
+  .comp-table .col-name { max-width: 280px; }
+  .comp-table td.col-name { font-weight: 600; color: #2d3f54; }
   .comp-table .col-type { max-width: 180px; }
-  .comp-table .col-signup { max-width: 220px; color: #666; font-size: 12.5px; white-space: pre-line; }
-  .comp-table .col-status { width: 100px; text-align: center; }
+  .comp-table .col-signup { max-width: 220px; }
+  .comp-table td.col-signup { color: #666; font-size: 12.5px; white-space: pre-line; font-weight: 600; }
+  .comp-table .col-status { width: 100px; text-align: left; padding-left: 0; }
   .comp-table .col-actions { width: 140px; text-align: center; }
   .type-chip { display: inline-block; padding: 2px 8px; margin: 2px; background: #eef2ff; color: #5b6abf; border-radius: 10px; font-size: 12px; }
   /* 状态徽章 */
@@ -370,7 +377,8 @@
   .detail-hero .modal-close {
     position: absolute; top: 16px; right: 18px;
     background: rgba(255,255,255,0.15); color: #fff; width: 30px; height: 30px;
-    border-radius: 50%; text-align: center; line-height: 30px; font-size: 18px;
+    border-radius: 50%; font-size: 16px; padding: 0; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
     transition: background 0.2s;
   }
   .detail-hero .modal-close:hover { background: rgba(255,255,255,0.3); }
@@ -644,7 +652,7 @@
         </div>
         <div class="home-bottom-grid">
           <div class="panel">
-            <h2>待办事项</h2>
+            <div class="todo-head"><h2>待办事项</h2><span class="todo-clear" onclick="clearDoneTodos()" title="删除所有已完成项">清除已完成</span></div>
             <div id="home-todos" style="font-size:14px;"></div>
             <span class="todo-add-fab" onclick="openTodoModal()" title="添加待办">＋</span>
           </div>
@@ -668,7 +676,7 @@
       <!-- 添加待办浮窗 -->
       <div class="modal-overlay" id="todo-modal" onclick="if(event.target===this)closeTodoModal()">
         <div class="modal">
-          <h3>＋ 添加待办</h3>
+          <h3 id="todo-modal-title">＋ 添加待办</h3>
           <div class="form-group"><label>事项名称 *</label><input id="todo-add-name" placeholder="如：准备蓝桥杯报名材料"></div>
           <div class="form-group"><label>日期（可选）</label><input id="todo-add-date" type="date"></div>
           <div class="form-group"><label>备注（可选）</label><input id="todo-add-note" placeholder="如：截止前"></div>
@@ -1010,70 +1018,112 @@ function renderHomeTodos() {
     // 没有未来事项时，回退展示最近的节点
     evTop = all.slice().sort(function(a, b) { return b.date.localeCompare(a.date); }).slice(0, 6);
   }
-  // 合并自定义待办
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem('home_todos_done') || '{}'); } catch (e) {}
+  var hidden = {};
+  try { hidden = JSON.parse(localStorage.getItem('home_todos_hidden') || '{}'); } catch (e) {}
+  // 合并自定义待办（已隐藏的比赛节点不再出现）
   var custom = getCustomTodos();
-  var items = evTop.map(function(e) { e.custom = -1; return e; });
-  custom.forEach(function(t, i) {
-    items.push({ date: t.date || '', name: t.name, type: t.note || '自定义', month: false, custom: i, cDone: !!t.done });
+  var items = [];
+  evTop.forEach(function(e) {
+    var key = e.date + '|' + e.type + '|' + e.name;
+    if (hidden[key]) return;
+    e.custom = -1;
+    e.key = key;
+    e._done = !!done[key];
+    items.push(e);
   });
-  items.sort(function(a, b) { return (a.date || '9999-12-31').localeCompare(b.date || '9999-12-31'); });
+  custom.forEach(function(t, i) {
+    items.push({ date: t.date || '', name: t.name, type: t.note || '自定义', month: false, custom: i, _done: !!t.done });
+  });
+  // 未完成在前（按日期），已完成沉底
+  items.sort(function(a, b) {
+    if (!!a._done !== !!b._done) return a._done ? 1 : -1;
+    return (a.date || '9999-12-31').localeCompare(b.date || '9999-12-31');
+  });
   var top = items.slice(0, 8);
   if (!top.length) {
     box.innerHTML = '<div class="empty">暂无待办事项，点击右下角 ＋ 创建</div>';
     return;
   }
-  var done = {};
-  try { done = JSON.parse(localStorage.getItem('home_todos_done') || '{}'); } catch (e) {}
   box.innerHTML = top.map(function(e) {
     var dateLabel = e.date
       ? parseInt(e.date.slice(5, 7), 10) + '月' + parseInt(e.date.slice(8, 10), 10) + '日' + (e.month ? '起' : '')
       : '待定';
     if (e.custom >= 0) {
-      return '<div class="todo-item' + (e.cDone ? ' done' : '') + '" title="' + (e.cDone ? '点击取消完成' : '点击标记完成') + '">'
-        + '<span class="todo-check" onclick="toggleCustomTodo(' + e.custom + ')">' + (e.cDone ? '✓' : '') + '</span>'
-        + '<div style="min-width:0;flex:1;cursor:pointer;" onclick="toggleCustomTodo(' + e.custom + ')"><div class="todo-name">' + e.name + '</div>'
+      return '<div class="todo-item' + (e._done ? ' done' : '') + '">'
+        + '<span class="todo-check" title="' + (e._done ? '已完成' : '标记完成') + '" onclick="toggleCustomTodo(' + e.custom + ')">' + (e._done ? '✓' : '') + '</span>'
+        + '<div style="min-width:0;flex:1;cursor:pointer;" title="点击编辑" onclick="openTodoModal(' + e.custom + ')"><div class="todo-name">' + e.name + '</div>'
         + '<div class="todo-meta">' + dateLabel + ' · ' + e.type + '</div></div>'
         + '<span class="todo-del" onclick="delCustomTodo(' + e.custom + ', event)" title="删除">×</span>'
         + '</div>';
     }
-    var key = e.date + '|' + e.type + '|' + e.name;
-    var isDone = !!done[key];
-    return '<div class="todo-item' + (isDone ? ' done' : '') + '" data-key="' + key.replace(/"/g, '&quot;') + '" title="' + (isDone ? '点击取消完成' : '点击标记完成') + '" onclick="toggleTodo(this)">'
-      + '<span class="todo-check">' + (isDone ? '✓' : '') + '</span>'
+    return '<div class="todo-item' + (e._done ? ' done' : '') + '" data-key="' + e.key.replace(/"/g, '&quot;') + '" title="' + (e._done ? '已完成' : '点击标记完成') + '" onclick="toggleTodo(this)">'
+      + '<span class="todo-check">' + (e._done ? '✓' : '') + '</span>'
       + '<div style="min-width:0;"><div class="todo-name">' + e.name + '</div>'
       + '<div class="todo-meta">' + dateLabel + ' · ' + e.type + '</div></div>'
       + '</div>';
   }).join('');
 }
-// 自定义待办：添加 / 勾选 / 删除
-function openTodoModal() {
+// 一键清除已完成（自定义项删除，比赛项移入隐藏列表不再复活）
+function clearDoneTodos() {
+  var list = getCustomTodos().filter(function(t) { return !t.done; });
+  saveCustomTodos(list);
+  var hidden = {};
+  try { hidden = JSON.parse(localStorage.getItem('home_todos_hidden') || '{}'); } catch (e) {}
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem('home_todos_done') || '{}'); } catch (e) {}
+  Object.keys(done).forEach(function(k) { hidden[k] = 1; });
+  localStorage.setItem('home_todos_hidden', JSON.stringify(hidden));
+  localStorage.removeItem('home_todos_done');
+  renderHomeTodos();
+}
+// 自定义待办：添加 / 编辑 / 勾选 / 删除
+var editingTodoIdx = -1;
+function openTodoModal(idx) {
+  editingTodoIdx = (typeof idx === 'number') ? idx : -1;
+  var title = document.getElementById('todo-modal-title');
+  if (title) title.textContent = editingTodoIdx >= 0 ? '编辑待办' : '＋ 添加待办';
+  var name = '', date = '', note = '';
+  if (editingTodoIdx >= 0) {
+    var t = getCustomTodos()[editingTodoIdx];
+    if (t) { name = t.name || ''; date = t.date || ''; note = t.note || ''; }
+  }
+  document.getElementById('todo-add-name').value = name;
+  document.getElementById('todo-add-date').value = date;
+  document.getElementById('todo-add-note').value = note;
   document.getElementById('todo-modal').classList.add('active');
   setTimeout(function() { document.getElementById('todo-add-name').focus(); }, 50);
 }
 function closeTodoModal() {
+  editingTodoIdx = -1;
   document.getElementById('todo-modal').classList.remove('active');
 }
 function addCustomTodo() {
   var name = document.getElementById('todo-add-name').value.trim();
   if (!name) { alert('请填写事项名称'); return; }
   var list = getCustomTodos();
-  list.push({
-    name: name,
-    date: document.getElementById('todo-add-date').value || '',
-    note: document.getElementById('todo-add-note').value.trim(),
-    done: false,
-  });
+  var date = document.getElementById('todo-add-date').value || '';
+  var note = document.getElementById('todo-add-note').value.trim();
+  if (editingTodoIdx >= 0 && list[editingTodoIdx]) {
+    list[editingTodoIdx].name = name;
+    list[editingTodoIdx].date = date;
+    list[editingTodoIdx].note = note;
+  } else {
+    list.push({ name: name, date: date, note: note, done: false });
+  }
   saveCustomTodos(list);
   document.getElementById('todo-add-name').value = '';
   document.getElementById('todo-add-date').value = '';
   document.getElementById('todo-add-note').value = '';
+  editingTodoIdx = -1;
   closeTodoModal();
   renderHomeTodos();
 }
 function toggleCustomTodo(i) {
   var list = getCustomTodos();
-  if (!list[i]) return;
-  list[i].done = !list[i].done;
+  if (!list[i] || list[i].done) return; // 已完成不可取消
+  list[i].done = true;
   saveCustomTodos(list);
   renderHomeTodos();
 }
@@ -1088,9 +1138,9 @@ function toggleTodo(el) {
   var key = el.getAttribute('data-key');
   var done = {};
   try { done = JSON.parse(localStorage.getItem('home_todos_done') || '{}'); } catch (e) {}
-  if (done[key]) { delete done[key]; } else { done[key] = 1; }
+  if (done[key]) return; // 已完成不可取消，仅能通过「清除已完成」移除
+  done[key] = 1;
   localStorage.setItem('home_todos_done', JSON.stringify(done));
-  // 以 localStorage 为唯一真源全量重渲染，杜绝 DOM 与数据状态不一致
   renderHomeTodos();
 }
 // 最近录入：按录入时间倒序的小块列表，点击查看完整详情
@@ -1922,7 +1972,9 @@ function renderList() {
         ${data.map(c => {
           const st = getStatus(c);
           const types = getCompType(c);
-          const signup = c.signupTimeLabel || c.signupTime || '—';
+          const signupRaw = c.signupTimeLabel || c.signupTime || '—';
+          // 多行时间（报名+比赛）只保留第一行报名时间
+          const signup = String(signupRaw).split(/\r?\n/)[0].trim() || '—';
           return `<tr>
             <td class="col-name">${escapeHtml(c.name)}</td>
             <td class="col-type">${types.length ? types.map(t => `<span class="type-chip">${escapeHtml(t)}</span>`).join('') : '—'}</td>
