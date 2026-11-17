@@ -181,7 +181,8 @@
   }
   .todo-del:hover { color: #fa709a; }
   /* 最近录入 / 最新动态：两张独立卡片并排 */
-  .home-news-row { display: grid; grid-template-columns: 300px 1fr; gap: 14px; }
+  .home-news-row { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 14px; }
+  .home-news-row > * { min-width: 0; }
   #home-latest { max-height: 118px; overflow-y: auto; }
   .latest-item { padding: 5px 2px; border-bottom: 1px dashed #eee; cursor: pointer; }
   .latest-item:last-child { border-bottom: none; }
@@ -192,7 +193,7 @@
     .home-news-row { grid-template-columns: 1fr; }
   }
   /* 最新动态横向时间线（左→右时间由近到远） */
-  .timeline-scroll { overflow-x: auto; padding: 4px 2px 2px; }
+  .timeline-scroll { overflow-x: auto; overflow-y: hidden; padding: 4px 2px 2px; min-width: 0; }
   .timeline { display: flex; min-width: max-content; }
   .timeline-item { position: relative; flex: 0 0 150px; padding-right: 16px; }
   .timeline-item::before {
